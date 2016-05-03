@@ -22,7 +22,10 @@ void UPositionReport::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
+	FString Str = this->GetOwner()->GetName();
+
+	UE_LOG(LogTemp, Warning, TEXT("PositionReport reporting for duty... %s"), *Str);
 }
 
 
