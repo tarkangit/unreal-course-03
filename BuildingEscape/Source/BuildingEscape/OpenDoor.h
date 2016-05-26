@@ -19,17 +19,25 @@ public:
 	virtual void BeginPlay() override;
 
 	void OpenDoor();
-	
+	void CloseDoor();
+
 	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	float	OpenAngle = 90;
+	UPROPERTY(EditAnywhere)
+	float	OpenAngle = -90;
 
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* PressurePlate;
-	
+
+	UPROPERTY(EditAnywhere)
+	float	DoorCloseDelay = 1.0;
+
+	float	LastDoorOpenTime;
+
 	/*UPROPERTY(EditAnywhere)*/
 	AActor* ActorThatOpens;	// APawn is a subclass of AActor
+
+	AActor * Owner = this->GetOwner();
 };
