@@ -30,4 +30,5 @@ private:
 
 	/// Grab what's within reach
 	void Grab();
+	void Release();
 };

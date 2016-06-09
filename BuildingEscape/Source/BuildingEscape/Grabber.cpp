@@ -46,6 +46,7 @@ void UGrabber::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("Input component found..."))
 
 			InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+			InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 	}
 	else
 	{
@@ -97,14 +98,18 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 
 	if (Hit.GetActor() != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit Actor named %s"), *Hit.GetActor()->GetName())
+		//UE_LOG(LogTemp, Warning, TEXT("Hit Actor named %s"), *Hit.GetActor()->GetName())
 	}
 
 	/// see what we hit
 }
-
+ 
 void UGrabber::Grab()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Grab function called"))
 }
 
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab released"))
+}
