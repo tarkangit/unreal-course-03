@@ -25,19 +25,13 @@ void UGrabber::BeginPlay()
 
 	UE_LOG(LogTemp, Warning, TEXT("Grabber reporting for duty!"));
 	
-	/// look for attached physics handle
-	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle != nullptr)
-	{
+	FindPhysicsHandleComponent();
 
-	}
-	else
-	{ 
-		UE_LOG(LogTemp, Error, TEXT("PhysicsHandle component of %s not found!"),
-			*GetOwner()->GetName())
-	}
+	SetupInputComponent();
+}
 
-
+void UGrabber::SetupInputComponent()
+{
 	/// look for attached input component
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 
@@ -46,11 +40,26 @@ void UGrabber::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("Input component found..."))
 
 			InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
-			InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
+		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Input component of %s not found!"),
+			*GetOwner()->GetName())
+	}
+}
+
+void UGrabber::FindPhysicsHandleComponent()
+{
+	/// look for attached physics handle
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (PhysicsHandle != nullptr)
+	{
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PhysicsHandle component of %s not found!"),
 			*GetOwner()->GetName())
 	}
 }
@@ -60,7 +69,22 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+}
+ 
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab function called"))
 
+	GetFirstPhysicsBodyInReach();
+}
+
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab released"))
+}
+
+const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+{
 	// get the player viewpoint this tick
 
 	FVector PlayerViewPointLocation;
@@ -91,25 +115,16 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 	FHitResult Hit;
 
 	GetWorld()->LineTraceSingleByObjectType(
-		OUT Hit,  
+		OUT Hit,
 		PlayerViewPointLocation, LineTraceEnd,
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters);
 
 	if (Hit.GetActor() != nullptr)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Hit Actor named %s"), *Hit.GetActor()->GetName())
+		UE_LOG(LogTemp, Warning, TEXT("Hit Actor named %s"), *Hit.GetActor()->GetName())
 	}
 
 	/// see what we hit
-}
- 
-void UGrabber::Grab()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Grab function called"))
-}
-
-void UGrabber::Release()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Grab released"))
+	return Hit;
 }
