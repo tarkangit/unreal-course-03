@@ -24,6 +24,8 @@ public:
 	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
+	float GetTotalMassOfActorsOnPlate();
+
 private:
 	UPROPERTY(EditAnywhere)
 	float	OpenAngle = -90;
@@ -36,8 +38,6 @@ private:
 
 	float	LastDoorOpenTime;
 
-	/*UPROPERTY(EditAnywhere)*/
-	AActor* ActorThatOpens;	// APawn is a subclass of AActor
 
 	AActor * Owner = this->GetOwner();
 };
