@@ -37,15 +37,12 @@ void UGrabber::SetupInputComponent()
 
 	if (InputComponent != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Input component found..."))
-
-			InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Input component of %s not found!"),
-			*GetOwner()->GetName())
+		UE_LOG(LogTemp, Error, TEXT("Input component of %s not found!"), *GetOwner()->GetName())
 	}
 }
 
@@ -53,17 +50,12 @@ void UGrabber::FindPhysicsHandleComponent()
 {
 	/// look for attached physics handle
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle != nullptr)
-	{
-
-	}
-	else
+	if (PhysicsHandle == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("PhysicsHandle component of %s not found!"),
 			*GetOwner()->GetName())
 	}
 }
-
 
 // Called every frame
 void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
@@ -75,15 +67,7 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 	{
 		/// Move the object to match pawn's new position
 
-		FVector PlayerViewPointLocation;
-		FRotator PlayerViewPointRotation;
-
-		GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-			OUT PlayerViewPointLocation,
-			OUT PlayerViewPointRotation
-		);
-
-		FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+		FVector LineTraceEnd = GetReachLineEnd();
 
 		PhysicsHandle->SetTargetLocation(LineTraceEnd);
 	}
@@ -94,7 +78,7 @@ void UGrabber::Grab()
 	UE_LOG(LogTemp, Warning, TEXT("Grab function called"))
 
 	auto HitResult = GetFirstPhysicsBodyInReach();
-	auto ComponentToGrab = HitResult.GetComponent();
+	auto ComponentToGrab = HitResult.GetComponent();	// Gets the MESH component of the target actor
 	auto ActorHit = HitResult.GetActor();
 
 	if (ActorHit != nullptr)
@@ -112,26 +96,9 @@ void UGrabber::Release()
 
 const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 {
-	// get the player viewpoint this tick
-
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPointLocation,
-		OUT PlayerViewPointRotation
-	);
-
-	//UE_LOG(LogTemp, Warning, TEXT("PlayerViewPointLocation %s PlayerViewPointRotation %s"), 
-	//	*PlayerViewPointLocation.ToString(), 
-	//	*PlayerViewPointRotation.ToString()
-	//);
-
-	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-
 	DrawDebugLine(
 		GetWorld(),
-		PlayerViewPointLocation, LineTraceEnd, FColor(255, 0, 0), false, 0, 0, 10);
+		GetReachLineStart(), GetReachLineEnd(), FColor(255, 0, 0), false, 0, 0, 10);
 
 	/// SETUP query parameters
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
@@ -143,7 +110,8 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT Hit,
-		PlayerViewPointLocation, LineTraceEnd,
+		GetReachLineStart(),
+		GetReachLineEnd(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters);
 
@@ -154,4 +122,32 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 
 	/// see what we hit
 	return Hit;
+}
+
+FVector UGrabber::GetReachLineStart()
+{
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation
+	);
+
+	FVector LineTraceEnd = PlayerViewPointLocation;
+	return LineTraceEnd;
+}
+
+FVector UGrabber::GetReachLineEnd()
+{
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation
+	);
+
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+	return LineTraceEnd;
 }
